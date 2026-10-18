@@ -91,11 +91,17 @@ export const OrganizerDashboard = () => {
   };
 
   const handleSaved = (saved: Event) => {
-    setNotice(
-      saved.status === 'APPROVED'
-        ? 'Мероприятие опубликовано в афише'
-        : 'Мероприятие создано и отправлено на модерацию',
-    );
+    const wasEditing = Boolean(editingEvent);
+
+    if (saved.status === 'APPROVED') {
+      setNotice(wasEditing ? 'Изменения сохранены и опубликованы' : 'Мероприятие опубликовано в афише');
+    } else {
+      setNotice(
+        wasEditing
+          ? 'Изменения сохранены и отправлены на модерацию'
+          : 'Мероприятие создано и отправлено на модерацию',
+      );
+    }
     setActionError('');
   };
 

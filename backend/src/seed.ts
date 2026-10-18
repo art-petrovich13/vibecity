@@ -501,7 +501,9 @@ const main = async () => {
     { user: 'anna', event: 4, seat: 7, promo: null },
     { user: 'mikhail', event: 1, seat: 20, promo: null },
     { user: 'mikhail', event: 3, seat: 8, promo: null },
+    { user: 'mikhail', event: 4, seat: 9, promo: null },
     { user: 'elena', event: 2, seat: 3, promo: null },
+    { user: 'elena', event: 5, seat: 11, promo: null },
   ];
 
   for (const ticket of ticketsSeed) {

@@ -229,8 +229,8 @@ export const updateEvent = async (req: Request, res: Response) => {
     data.status = body.status;
   }
 
-  // Отклонённое мероприятие после правок снова уходит на модерацию.
-  if (!isAdmin && existing.status === 'REJECTED') {
+  // Любые правки пользователя требуют повторной модерации.
+  if (!isAdmin) {
     data.status = 'PENDING';
   }
 
