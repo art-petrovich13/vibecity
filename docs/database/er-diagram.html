@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<title>VibeCity — ER-диаграмма</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #ffffff; }
+  body { font-family: Arial, Helvetica, sans-serif; color: #1f2937; }
+  #canvas {
+    position: relative;
+    width: 1430px;
+    height: 950px;
+    background:
+      radial-gradient(70% 60% at 50% 0%, rgba(124, 58, 237, 0.05), transparent 70%),
+      #ffffff;
+    overflow: hidden;
+  }
+  #edges { position: absolute; inset: 0; z-index: 1; }
+  #cards { position: absolute; inset: 0; z-index: 2; }
+  .entity {
+    position: absolute;
+    border: 1px solid #d8cfee;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 14px 32px -26px rgba(76, 29, 149, 0.55);
+    overflow: hidden;
+  }
+  .entity-header {
+    padding: 7px 12px 8px;
+    background: linear-gradient(135deg, #f4f0ff 0%, #fbf5ff 100%);
+    border-bottom: 1px solid #e4dcf7;
+  }
+  .entity-name {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #4c1d95;
+  }
+  .entity-ru {
+    margin-top: 1px;
+    font-size: 10px;
+    color: #7c6a9c;
+  }
+  .rows { padding: 4px 0 6px; }
+  .row {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 4px;
+    height: 21px;
+    padding: 0 10px;
+    font-size: 11.5px;
+    white-space: nowrap;
+  }
+  .row + .row { border-top: 1px solid #f5f2fb; }
+  .key {
+    justify-self: start;
+    min-width: 26px;
+    padding: 1px 4px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    font-size: 8.5px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.04em;
+  }
+  .key.pk { color: #92400e; background: #fef3c7; border-color: #fcd34d; }
+  .key.fk { color: #1d4ed8; background: #dbeafe; border-color: #93c5fd; }
+  .key.uk { color: #15803d; background: #dcfce7; border-color: #86efac; }
+  .key.empty { border-color: transparent; }
+  .field { color: #27303f; overflow: hidden; text-overflow: ellipsis; }
+  .type { color: #8b8b9e; font-family: "SFMono-Regular", Menlo, Consolas, monospace; font-size: 9px; }
+  .constraint {
+    margin: 0 10px 8px;
+    padding: 3px 6px;
+    border-radius: 5px;
+    background: #f0fdf4;
+    border: 1px dashed #86efac;
+    color: #166534;
+    font-size: 9px;
+    font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  .edge-label {
+    font-size: 11px;
+    font-weight: 700;
+    fill: #5b21b6;
+    paint-order: stroke;
+    stroke: #ffffff;
+    stroke-width: 4px;
+    stroke-linejoin: round;
+  }
+  #legend {
+    position: absolute;
+    left: 30px;
+    top: 790px;
+    width: 430px;
+    padding: 12px 14px;
+    border: 1px solid #e2d9f3;
+    border-radius: 12px;
+    background: #fbfaff;
+    z-index: 3;
+  }
+  #legend h3 {
+    margin: 0 0 8px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6d28d9;
+  }
+  .legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 10.5px; color: #4b5563; }
+  .legend-note {
+    margin-top: 9px;
+    padding-top: 8px;
+    border-top: 1px solid #ede7f8;
+    font-size: 10px;
+    line-height: 1.45;
+    color: #7c6a9c;
+  }
+  #meta {
+    position: absolute;
+    right: 30px;
+    bottom: 26px;
+    font-size: 10.5px;
+    color: #a196b8;
+    letter-spacing: 0.03em;
+    z-index: 3;
+  }
+</style>
+</head>
+<body>
+<div id="canvas">
+  <svg id="edges" width="1430" height="950" viewBox="0 0 1430 950" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="one" markerWidth="14" markerHeight="14" refX="7" refY="7" orient="auto">
+        <path d="M7,0 L7,14" stroke="#7c3aed" stroke-width="1.6" fill="none" />
+      </marker>
+      <marker id="crow" markerWidth="18" markerHeight="18" refX="16" refY="9" orient="auto">
+        <path d="M16,9 L2,1 M16,9 L2,9 M16,9 L2,17" stroke="#7c3aed" stroke-width="1.6" fill="none" />
+      </marker>
+    </defs>
+    <g id="edge-paths"></g>
+    <g id="edge-labels"></g>
+  </svg>
+
+  <div id="cards"></div>
+
+  <div id="legend">
+    <h3>Обозначения</h3>
+    <div class="legend-grid">
+      <div class="legend-item"><span class="key pk">PK</span> первичный ключ</div>
+      <div class="legend-item"><span class="key fk">FK</span> внешний ключ</div>
+      <div class="legend-item"><span class="key uk">UK</span> уникальное поле</div>
+      <div class="legend-item">
+        <svg width="40" height="14" viewBox="0 0 40 14">
+          <path d="M0,7 L40,7" stroke="#7c3aed" stroke-width="1.4" marker-start="url(#one)" marker-end="url(#crow)" />
+        </svg>
+        один ко многим
+      </div>
+    </div>
+    <div class="legend-note">
+      Связи показаны в нотации «вороньей лапки»: насечка у сущности «один»,
+      «лапка» — у сущности «многие». Пунктирные подписи под таблицами —
+      составные уникальные ограничения.
+    </div>
+  </div>
+
+  <div id="meta">VibeCity · 9 сущностей · 10 связей · MySQL 8.0</div>
+</div>
+
+<script>
+  const entities = [
+    {
+      name: 'ORGANIZER', ru: 'Организатор', x: 30, y: 30, w: 240,
+      fields: [
+        ['id', 'INT', 'PK'], ['name', 'VARCHAR', ''], ['contactPerson', 'VARCHAR', ''],
+        ['phone', 'VARCHAR', ''],
+      ],
+    },
+    {
+      name: 'PLACE', ru: 'Место проведения', x: 30, y: 205, w: 240,
+      fields: [
+        ['id', 'INT', 'PK'], ['city', 'VARCHAR', ''], ['name', 'VARCHAR', ''],
+        ['address', 'VARCHAR', ''], ['capacity', 'INT', ''],
+      ],
+    },
+    {
+      name: 'TAG', ru: 'Тег', x: 30, y: 390, w: 240,
+      fields: [
+        ['id', 'INT', 'PK'], ['name', 'VARCHAR', ''], ['type', 'VARCHAR', ''],
+      ],
+    },
+    {
+      name: 'GIFT', ru: 'Подарок', x: 30, y: 565, w: 240,
+      fields: [
+        ['id', 'INT', 'PK'], ['name', 'VARCHAR', ''], ['description', 'TEXT', ''],
+        ['type', 'VARCHAR', ''], ['status', 'ENUM', ''],
+      ],
+    },
+    {
+      name: 'USER', ru: 'Пользователь', x: 500, y: 20, w: 300,
+      fields: [
+        ['id', 'INT', 'PK'], ['lastName', 'VARCHAR', ''], ['firstName', 'VARCHAR', ''],
+        ['patronymic', 'VARCHAR', ''], ['phone', 'VARCHAR', 'UK'], ['email', 'VARCHAR', 'UK'],
+        ['password', 'VARCHAR', ''], ['role', 'ENUM', ''], ['isBanned', 'BOOLEAN', ''],
+        ['createdAt', 'DATETIME', ''], ['updatedAt', 'DATETIME', ''],
+      ],
+    },
+    {
+      name: 'EVENT', ru: 'Мероприятие', x: 580, y: 350, w: 330,
+      fields: [
+        ['id', 'INT', 'PK'], ['organizerId', 'INT', 'FK'], ['placeId', 'INT', 'FK'],
+        ['tagId', 'INT', 'FK'], ['createdById', 'INT', 'FK'], ['name', 'VARCHAR', ''],
+        ['date', 'DATE', ''], ['time', 'VARCHAR', ''], ['description', 'TEXT', ''],
+        ['category', 'VARCHAR', ''], ['imageUrl', 'TEXT', ''], ['price', 'INT', ''],
+        ['status', 'ENUM', ''], ['createdAt', 'DATETIME', ''], ['updatedAt', 'DATETIME', ''],
+      ],
+    },
+    {
+      name: 'REVIEW', ru: 'Отзыв', x: 1080, y: 40, w: 310,
+      fields: [
+        ['id', 'INT', 'PK'], ['userId', 'INT', 'FK'], ['eventId', 'INT', 'FK'],
+        ['text', 'TEXT', ''], ['rating', 'INT', ''], ['date', 'DATETIME', ''],
+      ],
+      constraint: 'UNIQUE (userId, eventId)',
+    },
+    {
+      name: 'TICKET', ru: 'Билет', x: 1080, y: 330, w: 310,
+      fields: [
+        ['id', 'INT', 'PK'], ['userId', 'INT', 'FK'], ['eventId', 'INT', 'FK'],
+        ['promoId', 'INT', 'FK'], ['seatNumber', 'INT', ''], ['price', 'INT', ''],
+        ['status', 'ENUM', ''], ['qrCode', 'VARCHAR', 'UK'], ['createdAt', 'DATETIME', ''],
+      ],
+      constraint: 'UNIQUE (eventId, seatNumber)',
+    },
+    {
+      name: 'PROMOCODE', ru: 'Промокод', x: 1080, y: 690, w: 310,
+      fields: [
+        ['id', 'INT', 'PK'], ['giftId', 'INT', 'FK'], ['code', 'VARCHAR', 'UK'],
+        ['status', 'ENUM', ''], ['discount', 'INT', ''],
+      ],
+    },
+  ];
+
+  const connections = [
+    { from: 'ORGANIZER', fromSide: 'right', fromAt: 0.5, to: 'EVENT', toSide: 'left', toAt: 0.15, label: '1 : N · организует' },
+    { from: 'PLACE', fromSide: 'right', fromAt: 0.5, to: 'EVENT', toSide: 'left', toAt: 0.38, label: '1 : N · принимает' },
+    { from: 'TAG', fromSide: 'right', fromAt: 0.5, to: 'EVENT', toSide: 'left', toAt: 0.62, label: '1 : N · маркирует' },
+    { from: 'USER', fromSide: 'bottom', fromAt: 0.5, to: 'EVENT', toSide: 'top', toAt: 0.3, label: '0..1 : N · создаёт' },
+    { from: 'USER', fromSide: 'right', fromAt: 0.27, to: 'REVIEW', toSide: 'left', toAt: 0.55, label: '1 : N · пишет' },
+    { from: 'USER', fromSide: 'right', fromAt: 0.78, to: 'TICKET', toSide: 'left', toAt: 0.3, label: '1 : N · покупает' },
+    { from: 'EVENT', fromSide: 'right', fromAt: 0.2, to: 'REVIEW', toSide: 'left', toAt: 0.9, label: '1 : N · получает' },
+    { from: 'EVENT', fromSide: 'right', fromAt: 0.68, to: 'TICKET', toSide: 'left', toAt: 0.58, label: '1 : N · продаёт' },
+    { from: 'GIFT', fromSide: 'right', fromAt: 0.5, to: 'PROMOCODE', toSide: 'left', toAt: 0.5, label: '1 : N · порождает' },
+    { from: 'PROMOCODE', fromSide: 'top', fromAt: 0.5, to: 'TICKET', toSide: 'bottom', toAt: 0.5, label: '0..1 : N · применяется' },
+  ];
+
+  const cardsRoot = document.getElementById('cards');
+  const pathsRoot = document.getElementById('edge-paths');
+  const labelsRoot = document.getElementById('edge-labels');
+
+  for (const entity of entities) {
+    const card = document.createElement('div');
+    card.className = 'entity';
+    card.id = `entity-${entity.name}`;
+    card.style.left = `${entity.x}px`;
+    card.style.top = `${entity.y}px`;
+    card.style.width = `${entity.w}px`;
+
+    const rows = entity.fields
+      .map(([field, type, key]) => `
+        <div class="row">
+          <span class="key ${key ? key.toLowerCase() : 'empty'}">${key}</span>
+          <span class="field">${field}</span>
+          <span class="type">${type}</span>
+        </div>`)
+      .join('');
+
+    card.innerHTML = `
+      <div class="entity-header">
+        <div class="entity-name">${entity.name}</div>
+        <div class="entity-ru">${entity.ru}</div>
+      </div>
+      <div class="rows">${rows}</div>
+      ${entity.constraint ? `<div class="constraint">${entity.constraint}</div>` : ''}
+    `;
+    cardsRoot.appendChild(card);
+  }
+
+  const canvas = document.getElementById('canvas');
+
+  function rectOf(name) {
+    const element = document.getElementById(`entity-${name}`);
+    const rect = element.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
+    return {
+      left: rect.left - canvasRect.left,
+      top: rect.top - canvasRect.top,
+      right: rect.right - canvasRect.left,
+      bottom: rect.bottom - canvasRect.top,
+      width: rect.width,
+      height: rect.height,
+    };
+  }
+
+  function anchor(name, side, at) {
+    const r = rectOf(name);
+    if (side === 'left') return { x: r.left, y: r.top + r.height * at };
+    if (side === 'right') return { x: r.right, y: r.top + r.height * at };
+    if (side === 'top') return { x: r.left + r.width * at, y: r.top, side };
+    return { x: r.left + r.width * at, y: r.bottom };
+  }
+
+  function cubicPoint(p0, p1, p2, p3, t) {
+    const mt = 1 - t;
+    return {
+      x: mt * mt * mt * p0.x + 3 * mt * mt * t * p1.x + 3 * mt * t * t * p2.x + t * t * t * p3.x,
+      y: mt * mt * mt * p0.y + 3 * mt * mt * t * p1.y + 3 * mt * t * t * p2.y + t * t * t * p3.y,
+    };
+  }
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+
+  for (const connection of connections) {
+    const from = anchor(connection.from, connection.fromSide, connection.fromAt);
+    const to = anchor(connection.to, connection.toSide, connection.toAt);
+
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+
+    let c1;
+    let c2;
+
+    if (connection.fromSide === 'right' && connection.toSide === 'left') {
+      c1 = { x: from.x + Math.max(70, Math.abs(dx) * 0.42), y: from.y };
+      c2 = { x: to.x - Math.max(70, Math.abs(dx) * 0.42), y: to.y };
+    } else if (connection.fromSide === 'bottom' && connection.toSide === 'top') {
+      c1 = { x: from.x, y: from.y + Math.max(18, Math.abs(dy) * 0.5) };
+      c2 = { x: to.x, y: to.y - Math.max(18, Math.abs(dy) * 0.5) };
+    } else if (connection.fromSide === 'top' && connection.toSide === 'bottom') {
+      c1 = { x: from.x, y: from.y - Math.max(18, Math.abs(dy) * 0.5) };
+      c2 = { x: to.x, y: to.y + Math.max(18, Math.abs(dy) * 0.5) };
+    } else {
+      c1 = { x: from.x + dx * 0.45, y: from.y };
+      c2 = { x: to.x - dx * 0.45, y: to.y };
+    }
+
+    if (connection.from === 'GIFT' && connection.to === 'PROMOCODE') {
+      c1 = { x: from.x + 260, y: from.y + 110 };
+      c2 = { x: to.x - 300, y: to.y - 10 };
+    }
+
+    if (connection.from === 'USER' && connection.to === 'TICKET') {
+      c1 = { x: from.x + 95, y: from.y + 5 };
+      c2 = { x: to.x - 110, y: to.y - 80 };
+    }
+
+    const path = document.createElementNS(svgNS, 'path');
+    path.setAttribute(
+      'd',
+      `M ${from.x} ${from.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${to.x} ${to.y}`,
+    );
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', '#7c3aed');
+    path.setAttribute('stroke-width', '1.7');
+    path.setAttribute('marker-start', 'url(#one)');
+    path.setAttribute('marker-end', 'url(#crow)');
+    pathsRoot.appendChild(path);
+
+    const labelPoint = cubicPoint(from, c1, c2, to, 0.5);
+    const label = document.createElementNS(svgNS, 'text');
+    label.setAttribute('x', labelPoint.x);
+    label.setAttribute('y', labelPoint.y - 6);
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('class', 'edge-label');
+    label.textContent = connection.label;
+    labelsRoot.appendChild(label);
+  }
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.body.dataset.ready = '1';
+    });
+  });
+</script>
+</body>
+</html>

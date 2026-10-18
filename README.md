@@ -197,7 +197,14 @@ vibecity/
 
 ## Модель данных
 
-Схема описана в [`backend/prisma/schema.prisma`](backend/prisma/schema.prisma):
+Схема описана в [`backend/prisma/schema.prisma`](backend/prisma/schema.prisma).
+
+Материалы для защиты проектирования БД:
+
+- [ER-диаграмма (PNG)](docs/database/er-diagram.png) и [интерактивная версия](docs/database/er-diagram.html);
+- [подробное описание схемы, ключей, индексов и нормализации](docs/database/database-design.md);
+- [PDF для печати](docs/database/database-design.pdf);
+- [сценарий показа преподавателю на 7–8 минут](docs/database/demo-script.md).
 
 1. **User** — ФИО, телефон, email, bcrypt-пароль, роль (`USER`/`ADMIN`), блокировка.
 2. **Organizer** — название, контактное лицо, телефон.
