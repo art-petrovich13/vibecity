@@ -138,7 +138,7 @@ export const HomePage = () => {
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-relaxed text-white/50 sm:text-lg">
-              Концерты, театр, выставки, стендап и спорт — в одном месте. Находите события,
+              Концерты, театр, выставки, стендап и спорт — по всей Беларуси. Находите события,
               покупайте билеты и сохраняйте QR-код до самого входа.
             </p>
 
@@ -196,7 +196,9 @@ export const HomePage = () => {
                 <p className="font-display text-2xl font-bold text-white">
                   {catalogQuery.data?.cities.length ?? '—'}
                 </p>
-                <p className="text-xs text-white/35">городов</p>
+                <p className="text-xs text-white/35">
+                  {pluralize(catalogQuery.data?.cities.length ?? 0, 'город', 'города', 'городов')}
+                </p>
               </div>
               <div>
                 <p className="font-display text-2xl font-bold text-white">

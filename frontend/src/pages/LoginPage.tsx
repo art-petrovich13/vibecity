@@ -42,7 +42,7 @@ export const LoginPage = () => {
   };
 
   const fillDemo = (role: 'admin' | 'user') => {
-    setEmail(role === 'admin' ? 'admin@vibecity.ru' : 'user@vibecity.ru');
+    setEmail(role === 'admin' ? 'admin@vibecity.by' : 'user@vibecity.by');
     setPassword(role === 'admin' ? 'admin' : 'user123');
     setError('');
   };
@@ -134,7 +134,7 @@ export const LoginPage = () => {
             className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-left transition hover:border-vibe-400/40 hover:bg-vibe-500/10"
           >
             <span className="block text-xs font-semibold text-white">Администратор</span>
-            <span className="mt-0.5 block text-[11px] text-white/40">admin@vibecity.ru / admin</span>
+            <span className="mt-0.5 block text-[11px] text-white/40">admin@vibecity.by / admin</span>
           </button>
           <button
             type="button"
@@ -142,7 +142,7 @@ export const LoginPage = () => {
             className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-left transition hover:border-vibe-400/40 hover:bg-vibe-500/10"
           >
             <span className="block text-xs font-semibold text-white">Пользователь</span>
-            <span className="mt-0.5 block text-[11px] text-white/40">user@vibecity.ru / user123</span>
+            <span className="mt-0.5 block text-[11px] text-white/40">user@vibecity.by / user123</span>
           </button>
         </div>
         <p className="mt-2.5 text-[11px] text-white/25">Нажмите, чтобы подставить данные в форму.</p>

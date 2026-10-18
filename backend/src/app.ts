@@ -1,5 +1,3 @@
-import fs from 'fs';
-import path from 'path';
 import cors from 'cors';
 import express from 'express';
 import adminRoutes from './routes/admin.routes';
@@ -31,18 +29,6 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/meta', metaRoutes);
 
 app.use('/api', notFoundHandler);
-
-// В production Express раздаёт собранный React из backend/public.
-const publicDir = path.resolve(__dirname, '../public');
-const indexHtml = path.join(publicDir, 'index.html');
-
-if (fs.existsSync(indexHtml)) {
-  app.use(express.static(publicDir));
-  app.get(/^\/(?!api(?:\/|$)).*/, (_req, res) => {
-    res.sendFile(indexHtml);
-  });
-}
-
 app.use(notFoundHandler);
 app.use(errorHandler);
 

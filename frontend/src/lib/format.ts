@@ -57,7 +57,7 @@ export const formatEventDateTime = (date: string | Date, time: string): string =
 
 export const formatPrice = (price: number): string => {
   if (price <= 0) return 'Бесплатно';
-  return `${new Intl.NumberFormat('ru-RU').format(price)} ₽`;
+  return `${new Intl.NumberFormat('ru-RU').format(price)} р.`;
 };
 
 export const formatDateTime = (value: string | Date): string => {

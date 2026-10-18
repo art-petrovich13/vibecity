@@ -170,7 +170,7 @@ export const RegisterPage = () => {
               <input
                 id="register-phone"
                 className="field pl-11"
-                placeholder="+7 900 000-00-00"
+                placeholder="+375 29 000-00-00"
                 autoComplete="tel"
                 value={form.phone}
                 onChange={(event) => update('phone', event.target.value)}

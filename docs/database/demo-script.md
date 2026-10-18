@@ -7,16 +7,17 @@
    колесом мыши, не теряя качество. Резервный вариант — [`er-diagram.png`](er-diagram.png).
 3. **Схема Prisma**: [`backend/prisma/schema.prisma`](../../backend/prisma/schema.prisma).
 4. **Терминал** в корне проекта.
-5. **Админ-панель**: войти как `admin@vibecity.ru` / `admin`.
+5. **Админ-панель**: войти как `admin@vibecity.by` / `admin`.
 
 Проверьте перед показом:
 
 ```bash
 docker compose ps
-docker compose exec vibecity mysql --default-character-set=utf8mb4 -uvibecity -pvibecity vibecity -e "SHOW TABLES;"
+docker compose exec db mysql --default-character-set=utf8mb4 -uvibecity -pvibecity vibecity -e "SHOW TABLES;"
 ```
 
-Контейнер должен быть в статусе `healthy`, а команда — вывести 9 таблиц.
+Все три контейнера группы `vibecity` (`vibecity-frontend`, `vibecity-backend`, `vibecity-db`)
+должны быть в статусе `healthy`, а команда — вывести 9 таблиц.
 
 ---
 
@@ -71,13 +72,13 @@ docker compose exec vibecity mysql --default-character-set=utf8mb4 -uvibecity -p
 
 ```bash
 # 1. Таблицы
-docker compose exec vibecity mysql --default-character-set=utf8mb4 -uvibecity -pvibecity vibecity -e "SHOW TABLES;"
+docker compose exec db mysql --default-character-set=utf8mb4 -uvibecity -pvibecity vibecity -e "SHOW TABLES;"
 
 # 2. Структура таблицы билетов: PK, FK, UK, индексы
-docker compose exec vibecity mysql --default-character-set=utf8mb4 -uvibecity -pvibecity vibecity -e "SHOW CREATE TABLE Ticket\G"
+docker compose exec db mysql --default-character-set=utf8mb4 -uvibecity -pvibecity vibecity -e "SHOW CREATE TABLE Ticket\G"
 
 # 3. Все внешние ключи базы
-docker compose exec vibecity mysql --default-character-set=utf8mb4 -uvibecity -pvibecity vibecity -e "
+docker compose exec db mysql --default-character-set=utf8mb4 -uvibecity -pvibecity vibecity -e "
 SELECT TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
 FROM information_schema.KEY_COLUMN_USAGE
 WHERE TABLE_SCHEMA = 'vibecity' AND REFERENCED_TABLE_NAME IS NOT NULL;"
@@ -109,7 +110,7 @@ WHERE TABLE_SCHEMA = 'vibecity' AND REFERENCED_TABLE_NAME IS NOT NULL;"
 **Сразу после покупки выполнить:**
 
 ```bash
-docker compose exec vibecity mysql --default-character-set=utf8mb4 -uvibecity -pvibecity vibecity -e "
+docker compose exec db mysql --default-character-set=utf8mb4 -uvibecity -pvibecity vibecity -e "
 SELECT t.id, e.name, t.seatNumber, t.price, u.email, t.qrCode
 FROM Ticket t
 JOIN Event e ON e.id = t.eventId
@@ -128,11 +129,11 @@ LIMIT 3;"
 
 ```bash
 # промокод изменил статус
-docker compose exec vibecity mysql --default-character-set=utf8mb4 -uvibecity -pvibecity vibecity -e "
+docker compose exec db mysql --default-character-set=utf8mb4 -uvibecity -pvibecity vibecity -e "
 SELECT code, discount, status FROM Promocode WHERE code = 'VIBE10';"
 
 # количество билетов
-docker compose exec vibecity mysql --default-character-set=utf8mb4 -uvibecity -pvibecity vibecity -e "SELECT COUNT(*) AS tickets FROM Ticket;"
+docker compose exec db mysql --default-character-set=utf8mb4 -uvibecity -pvibecity vibecity -e "SELECT COUNT(*) AS tickets FROM Ticket;"
 ```
 
 ---
@@ -148,14 +149,14 @@ docker compose exec vibecity mysql --default-character-set=utf8mb4 -uvibecity -p
 ### 2. Запрет удаления справочника
 
 В админке: **Справочники → Места → удалить площадку, у которой есть мероприятия**.
-Например, «Концертный зал «Аврора». Появится ошибка — это `ON DELETE RESTRICT`.
+Например, «Prime Hall». Появится ошибка — это `ON DELETE RESTRICT`.
 
 То же самое в SQL:
 
 ```bash
-docker compose exec vibecity mysql --default-character-set=utf8mb4 -uvibecity -pvibecity vibecity -e "
+docker compose exec db mysql --default-character-set=utf8mb4 -uvibecity -pvibecity vibecity -e "
 START TRANSACTION;
-DELETE FROM Place WHERE id = 5;
+DELETE FROM Place WHERE id = 2;
 ROLLBACK;" || true
 ```
 

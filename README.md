@@ -1,8 +1,11 @@
 # VibeCity — афиша мероприятий
 
-Учебный проект (курсовая работа): полноценная веб-платформа для поиска городских событий и
-продажи билетов. Внутри — React-фронтенд, REST API на Express, база MySQL и всё это упаковано
-в один Docker-контейнер.
+Учебный проект (курсовая работа): полноценная веб-платформа для поиска событий и продажи
+билетов. Внутри — React-фронтенд, REST API на Express и база MySQL. Всё запускается как
+Docker Compose-группа **`vibecity`** из трёх контейнеров: `frontend`, `backend` и `db`.
+
+Демо-данные локализованы под Беларусь: города Минск, Гомель, Брест, Витебск, Гродно и Могилёв,
+белорусские телефоны `+375`, почты в домене `vibecity.by`, цены в белорусских рублях (`р.`).
 
 **Что умеет сервис:**
 
@@ -42,39 +45,47 @@
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, React Router v6, Zustand, React Query, Axios, lucide-react, qrcode.react |
 | Backend | Node.js 20, TypeScript, Express, Prisma ORM, JWT, bcryptjs, Zod |
 | База данных | MySQL 8.0 |
-| Инфраструктура | Docker, Docker Compose, единый контейнер (Ubuntu 24.04 + MySQL + Node.js) |
+| Инфраструктура | Docker Compose: группа `vibecity` из трёх сервисов — `frontend` (nginx), `backend` (Node.js), `db` (MySQL 8.0) |
 
 ---
 
 ## Быстрый старт в Docker
 
-Требуется установленный Docker.
+Требуется установленный Docker с Compose v2.
 
 ```bash
 docker compose up --build -d
 ```
 
-Откройте **http://localhost:3000** — приложение раздаётся тем же Express-сервером, что и API.
+Откройте **http://localhost:3000** — nginx раздаёт собранный React и проксирует `/api` в backend.
+
+### Как устроена группа контейнеров
+
+| Сервис | Контейнер | Образ / сборка | Порт | Роль |
+| --- | --- | --- | --- | --- |
+| `frontend` | `vibecity-frontend` | [frontend/Dockerfile](frontend/Dockerfile) + nginx | `3000:80` | Статика React и reverse proxy для API |
+| `backend` | `vibecity-backend` | [backend/Dockerfile](backend/Dockerfile) | внутренний `3000` | Express API, Prisma, JWT |
+| `db` | `vibecity-db` | `mysql:8.0` | `127.0.0.1:3307:3306` | MySQL 8.0, те же таблицы |
+
+Все сервисы находятся в сети `vibecity_network` и в одной группе Docker Compose `vibecity`.
+Backend не публикует порт наружу — API доступен через nginx по адресу `http://localhost:3000/api`.
+Порт MySQL `3307` опубликован только на `127.0.0.1` — для локального подключения Prisma Studio
+или MySQL Workbench.
 
 Полезные команды:
 
 ```bash
-docker compose logs -f         # логи приложения и MySQL
-docker compose down            # остановить (данные в volume сохраняются)
-docker compose down -v         # остановить и удалить базу данных
+docker compose ps                  # статус всех трёх контейнеров
+docker compose logs -f             # логи frontend + backend + db
+docker compose logs -f backend     # только API
+docker compose down                # остановить (данные сохраняются)
+docker compose down -v             # остановить и удалить базу данных
 ```
 
-Альтернатива без compose:
-
-```bash
-docker build -t vibecity .
-docker run -d --name vibecity -p 3000:3000 -v vibecity_mysql:/var/lib/mysql vibecity
-```
-
-> При первом запуске контейнер сам инициализирует MySQL, применяет схему Prisma и загружает
+> При первом запуске backend ждёт готовности MySQL, применяет схему Prisma и загружает
 > демо-данные. При повторном запуске сидинг пропускается, данные сохраняются в volume
-> `mysql_data`. Секрет JWT и пароль можно переопределить через переменные окружения
-> `JWT_SECRET`, `DB_PASSWORD` в `docker-compose.yml`.
+> `vibecity_mysql_data`. Пароли MySQL и `JWT_SECRET` можно переопределить через переменные
+> окружения в `docker-compose.yml` или в `.env` рядом с compose-файлом.
 
 ---
 
@@ -82,20 +93,20 @@ docker run -d --name vibecity -p 3000:3000 -v vibecity_mysql:/var/lib/mysql vibe
 
 | Роль | Email | Пароль | Возможности |
 | --- | --- | --- | --- |
-| Администратор | `admin@vibecity.ru` | `admin` | всё: модерация, пользователи, справочники |
-| Пользователь | `user@vibecity.ru` | `user123` | билеты, отзывы, кабинет организатора |
-| Пользователь | `mikhail@vibecity.ru` | `user123` | билеты и отзывы |
-| Пользователь | `elena@vibecity.ru` | `user123` | билеты и отзывы |
+| Администратор | `admin@vibecity.by` | `admin` | всё: модерация, пользователи, справочники |
+| Пользователь | `user@vibecity.by` | `user123` | билеты, отзывы, кабинет организатора |
+| Пользователь | `mikhail@vibecity.by` | `user123` | билеты и отзывы |
+| Пользователь | `elena@vibecity.by` | `user123` | билеты и отзывы |
 
 Промокоды для проверки покупки: `VIBE10` (−10%), `WELCOME15` (−15%), `NEON20` (−20%),
 `GIFT50` (−50%). Промокод одноразовый: после покупки он получает статус `USED`.
 
 Что можно проверить:
 
-1. Войти как `user@vibecity.ru` → открыть любое событие → купить билет, выбрать место,
+1. Войти как `user@vibecity.by` → открыть любое событие → купить билет, выбрать место,
    ввести промокод → увидеть QR в «Мои билеты».
 2. Оставить отзыв (доступен только после покупки билета).
-3. Войти как `admin@vibecity.ru` → «Админка» → одобрить мероприятие «Vibe Comedy Night»
+3. Войти как `admin@vibecity.by` → «Админка» → одобрить мероприятие «Vibe Comedy Night»
    (оно специально создано со статусом «На модерации»).
 4. Создать мероприятие в кабинете организатора — оно уйдёт на модерацию; администратор
    публикует или отклоняет его.
@@ -105,41 +116,40 @@ docker run -d --name vibecity -p 3000:3000 -v vibecity_mysql:/var/lib/mysql vibe
 
 ## Запуск локально (без Docker)
 
-Нужны Node.js 20+ и MySQL 8.0.
+Нужны Node.js 20+ и Docker — удобнее всего поднять только MySQL из compose:
 
-### 1. База данных
-
-Создайте пустую базу `vibecity` и пользователя (или используйте root):
-
-```sql
-CREATE DATABASE vibecity CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```bash
+docker compose up -d db
 ```
 
-### 2. Backend
+MySQL будет доступен на `127.0.0.1:3307` (база `vibecity`, пользователь `vibecity`,
+пароль `vibecity`). Полный compose при этом можно не запускать.
+
+### 1. Backend
 
 ```bash
 cd backend
 cp .env.example .env
-```
-
-При необходимости поправьте `.env`:
-
-```env
-PORT=3000
-NODE_ENV=development
-DATABASE_URL="mysql://root:root@localhost:3306/vibecity"
-JWT_SECRET="vibecity-local-dev-secret"
-JWT_EXPIRES_IN="24h"
-```
-
-```bash
 npm ci
 npx prisma db push      # создаёт таблицы
 npm run seed            # демо-данные (--force для перезаписи)
 npm run dev             # API на http://localhost:3000
 ```
 
-### 3. Frontend
+Файл `.env` уже настроен на локальную БД из compose:
+
+```env
+PORT=3000
+NODE_ENV=development
+DATABASE_URL="mysql://vibecity:vibecity@localhost:3307/vibecity"
+JWT_SECRET="vibecity-local-dev-secret"
+JWT_EXPIRES_IN="24h"
+```
+
+Если MySQL установлен локально на порту `3306`, поменяйте `DATABASE_URL`, например на
+`mysql://root:root@localhost:3306/vibecity`.
+
+### 2. Frontend
 
 Во втором терминале:
 
@@ -150,15 +160,19 @@ npm run dev             # Vite на http://localhost:5173
 ```
 
 Vite проксирует все запросы `/api` на `http://localhost:3000` (см. `frontend/vite.config.ts`).
+Поэтому для локальной разработки backend должен быть запущен на порту `3000`. Если в этот
+момент работает полный Docker Compose, остановите его контейнеры `frontend` и `backend`:
 
-Production-сборка фронтенда:
+```bash
+docker compose stop frontend backend
+```
+
+Production-сборка фронтенда собирается в `frontend/dist` и раздаётся nginx-контейнером:
 
 ```bash
 cd frontend
-npm run build           # dist/
+npm run build
 ```
-
-Собранный `dist` можно положить в `backend/public` — Express начнёт раздавать статику и SPA.
 
 ---
 
@@ -167,29 +181,32 @@ npm run build           # dist/
 ```text
 vibecity/
 ├── backend/
-│   ├── prisma/schema.prisma      # 9 сущностей, связи, enum'ы
+│   ├── Dockerfile                 # сборка backend: Prisma + TypeScript
+│   ├── entrypoint.sh              # ожидание MySQL, prisma db push, seed, запуск
+│   ├── prisma/schema.prisma       # 9 сущностей, связи, enum'ы
 │   ├── src/
-│   │   ├── controllers/          # auth, events, tickets, reviews, admin, meta
-│   │   ├── middleware/           # JWT, роли, ошибки, валидация
-│   │   ├── routes/               # REST-маршруты
-│   │   ├── validators/           # Zod-схемы
-│   │   ├── utils/                # JWT, ошибки, выборки, даты
-│   │   ├── app.ts                # Express-приложение и раздача SPA
-│   │   ├── index.ts              # запуск сервера
-│   │   └── seed.ts               # демо-данные
+│   │   ├── controllers/           # auth, events, tickets, reviews, admin, meta
+│   │   ├── middleware/            # JWT, роли, ошибки, валидация
+│   │   ├── routes/                # REST-маршруты
+│   │   ├── validators/            # Zod-схемы
+│   │   ├── utils/                 # JWT, ошибки, выборки, даты
+│   │   ├── app.ts                 # Express-приложение
+│   │   ├── index.ts               # запуск сервера
+│   │   └── seed.ts                # демо-данные
 │   └── package.json
 ├── frontend/
+│   ├── Dockerfile                 # Vite build + nginx
+│   ├── nginx.conf                 # раздача SPA и proxy /api → backend
 │   └── src/
-│       ├── api/                  # Axios-клиент и методы API
-│       ├── components/           # UI, карточки, модалки, админ-секции
-│       ├── pages/                # Home, Event, Auth, Profile, Organizer, Admin, 404
-│       ├── stores/               # Zustand (auth)
-│       ├── lib/                  # форматирование, classnames
-│       └── types/                # общие TypeScript-типы
-├── Dockerfile                    # multi-stage: frontend → backend → Ubuntu + MySQL
-├── entrypoint.sh                 # инициализация MySQL, prisma db push, seed, запуск
-├── docker-compose.yml
-├── plan.md                       # исходное ТЗ
+│       ├── api/                   # Axios-клиент и методы API
+│       ├── components/            # UI, карточки, модалки, админ-секции
+│       ├── pages/                 # Home, Event, Auth, Profile, Organizer, Admin, 404
+│       ├── stores/                # Zustand (auth)
+│       ├── lib/                   # форматирование, classnames
+│       └── types/                 # общие TypeScript-типы
+├── docs/                          # скриншоты и документация по БД
+├── docker-compose.yml             # группа vibecity: frontend + backend + db
+├── plan.md                        # исходное ТЗ
 └── README.md
 ```
 
@@ -283,12 +300,14 @@ vibecity/
 
 | Переменная | Назначение | По умолчанию |
 | --- | --- | --- |
-| `PORT` | порт Express | `3000` |
-| `NODE_ENV` | режим (`production` включает раздачу SPA) | `development` |
-| `DATABASE_URL` | строка подключения Prisma | — |
-| `JWT_SECRET` | секрет подписи токенов | dev-значение |
+| `PORT` | порт Express внутри backend-контейнера | `3000` |
+| `NODE_ENV` | режим работы Node.js | `production` в compose |
+| `DATABASE_URL` | строка подключения Prisma | `mysql://vibecity:vibecity@db:3306/vibecity` |
+| `JWT_SECRET` | секрет подписи токенов | значение из compose |
 | `JWT_EXPIRES_IN` | срок жизни JWT | `24h` |
-| `DB_NAME`, `DB_USER`, `DB_PASSWORD` | параметры MySQL в контейнере | `vibecity` / `vibecity` / `vibecity` |
+| `MYSQL_DATABASE` | имя базы в контейнере `db` | `vibecity` |
+| `MYSQL_USER`, `MYSQL_PASSWORD` | пользователь MySQL | `vibecity` / `vibecity` |
+| `MYSQL_ROOT_PASSWORD` | root-пароль MySQL | `root` |
 
 ---
 
@@ -308,11 +327,12 @@ vibecity/
 
 | Проблема | Решение |
 | --- | --- |
-| `Can't reach database server` | проверьте, что MySQL запущен, и `DATABASE_URL` указывает на верный порт |
-| Порт 3000 занят | измените `PORT` и маппинг портов в `docker-compose.yml` |
-| Нужно сбросить демо-данные | `cd backend && npm run seed -- --force` или `docker compose down -v` |
+| `Can't reach database server` | проверьте `docker compose ps`; в compose хост БД — `db`, при локальном запуске — `localhost:3307` |
+| Порт 3000 занят | измените маппинг `frontend` в `docker-compose.yml`, например `"3001:80"` |
+| API отвечает `502` | backend не прошёл healthcheck: `docker compose logs backend` |
+| Нужно сбросить демо-данные | `docker compose down -v` (удалит volume `vibecity_mysql_data`) или `cd backend && npm run seed -- --force` |
 | Не загружаются картинки | события используют внешние изображения Unsplash; без интернета показывается заглушка |
-| Белый экран после деплоя | убедитесь, что `frontend/dist` скопирован в `backend/public` и `NODE_ENV=production` |
+| Белый экран после сборки | проверьте `docker compose logs frontend`; nginx должен раздавать `index.html` и проксировать `/api` на `backend:3000` |
 
 ---
 

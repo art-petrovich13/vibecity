@@ -37,7 +37,7 @@ const emptyForm = (): FormState => ({
   placeId: '',
   date: '',
   time: '19:00',
-  price: '1000',
+  price: '50',
   imageUrl: '',
   description: '',
 });
@@ -307,13 +307,13 @@ export const EventFormModal = ({ open, onClose, event, catalog, onSaved }: Event
           </div>
           <div>
             <label className="field-label" htmlFor="event-price">
-              Цена, ₽ *
+              Цена, р. *
             </label>
             <input
               id="event-price"
               type="number"
               min={0}
-              step={50}
+              step={5}
               className="field"
               value={form.price}
               onChange={(changeEvent) => update('price', changeEvent.target.value)}

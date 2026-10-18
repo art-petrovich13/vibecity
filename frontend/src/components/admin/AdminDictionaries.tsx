@@ -359,9 +359,9 @@ export const AdminDictionaries = () => {
     initialValues: { city: '', name: '', address: '', capacity: '300' },
     getDisplayName: (place) => place.name,
     fields: [
-      { name: 'name', label: 'Название', required: true, placeholder: 'Клуб «Космонавт»' },
-      { name: 'city', label: 'Город', required: true, placeholder: 'Москва' },
-      { name: 'address', label: 'Адрес', required: true, placeholder: 'ул. Космонавтов, 12' },
+      { name: 'name', label: 'Название', required: true, placeholder: 'Клуб «Re:Public»' },
+      { name: 'city', label: 'Город', required: true, placeholder: 'Минск' },
+      { name: 'address', label: 'Адрес', required: true, placeholder: 'ул. Октябрьская, 16' },
       {
         name: 'capacity',
         label: 'Вместимость',
@@ -407,7 +407,7 @@ export const AdminDictionaries = () => {
     fields: [
       { name: 'name', label: 'Название', required: true, placeholder: 'Vibe Production' },
       { name: 'contactPerson', label: 'Контактное лицо', required: true, placeholder: 'Артём Смирнов' },
-      { name: 'phone', label: 'Телефон', required: true, placeholder: '+7 495 111-22-33' },
+      { name: 'phone', label: 'Телефон', required: true, placeholder: '+375 29 111-22-33' },
     ],
     columns: [
       {

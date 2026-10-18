@@ -9,8 +9,8 @@ export const Footer = () => {
         <div className="sm:col-span-2 lg:col-span-1">
           <Logo />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/45">
-            Афиша городских событий: концерты, театр, выставки, стендап и спорт. Собираем то, что
-            стоит вашего вечера.
+            Афиша событий Беларуси: концерты, театр, выставки, стендап и спорт. Собираем то, что
+            стоит вашего вечера — от Минска до Гомеля и Бреста.
           </p>
         </div>
 
@@ -38,9 +38,9 @@ export const Footer = () => {
         <div>
           <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-white/35">Города</h3>
           <ul className="mt-4 space-y-2.5 text-sm text-white/55">
-            <li>Москва</li>
-            <li>Санкт-Петербург</li>
-            <li>Казань · Екатеринбург</li>
+            <li>Минск · Гомель</li>
+            <li>Брест · Витебск</li>
+            <li>Гродно · Могилёв</li>
           </ul>
         </div>
 
@@ -48,13 +48,13 @@ export const Footer = () => {
           <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-white/35">Контакты</h3>
           <ul className="mt-4 space-y-2.5 text-sm text-white/55">
             <li className="flex items-center gap-2">
-              <Mail size={14} className="text-vibe-300" /> hello@vibecity.ru
+              <Mail size={14} className="text-vibe-300" /> hello@vibecity.by
             </li>
             <li className="flex items-center gap-2">
-              <Phone size={14} className="text-vibe-300" /> +7 495 000-00-00
+              <Phone size={14} className="text-vibe-300" /> +375 29 000-00-00
             </li>
             <li className="flex items-center gap-2">
-              <MapPin size={14} className="text-vibe-300" /> Москва, Хлебозавод №9
+              <MapPin size={14} className="text-vibe-300" /> Минск, ул. Октябрьская, 16
             </li>
           </ul>
         </div>
