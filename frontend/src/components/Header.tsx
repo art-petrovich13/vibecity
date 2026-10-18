@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, LogOut, Menu, ShieldCheck, Ticket, UserRound, X } from 'lucide-react';
+import { LogOut, Menu, ShieldCheck, Ticket, UserRound, X } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { cn } from '../lib/cn';
 import { Logo } from './Logo';
