@@ -1,0 +1,181 @@
+// VibeCity — афиша мероприятий
+// Схема БД по техническому заданию (9 сущностей + связи)
+
+generator client {
+  provider = "prisma-client-js"
+  // native — для macOS/Linux разработчика, остальные — для финального Ubuntu-образа
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum EventStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TicketStatus {
+  ACTIVE
+  USED
+  CANCELLED
+}
+
+enum PromocodeStatus {
+  ACTIVE
+  USED
+  EXPIRED
+}
+
+enum GiftStatus {
+  AVAILABLE
+  RESERVED
+  GIVEN
+}
+
+// 1. Пользователь
+model User {
+  id         Int      @id @default(autoincrement())
+  lastName   String
+  firstName  String
+  patronymic String?
+  phone      String   @unique
+  email      String   @unique
+  password   String
+  role       Role     @default(USER)
+  isBanned   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  reviews   Review[]
+  tickets   Ticket[]
+  createdEvents Event[] @relation("EventCreator")
+}
+
+// 2. Организатор
+model Organizer {
+  id            Int     @id @default(autoincrement())
+  name          String
+  contactPerson String
+  phone         String
+
+  events Event[]
+}
+
+// 3. Место проведения
+model Place {
+  id       Int    @id @default(autoincrement())
+  city     String
+  name     String
+  address  String
+  capacity Int
+
+  events Event[]
+}
+
+// 4. Тег
+model Tag {
+  id   Int    @id @default(autoincrement())
+  name String
+  type String
+
+  events Event[]
+}
+
+// 5. Мероприятие
+model Event {
+  id          Int         @id @default(autoincrement())
+  organizerId Int
+  placeId     Int
+  tagId       Int
+  createdById Int?
+  name        String
+  date        DateTime
+  time        String
+  description String      @db.Text
+  category    String
+  imageUrl    String?     @db.Text
+  price       Int         @default(0)
+  status      EventStatus @default(APPROVED)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  organizer Organizer @relation(fields: [organizerId], references: [id], onDelete: Restrict)
+  place     Place     @relation(fields: [placeId], references: [id], onDelete: Restrict)
+  tag       Tag       @relation(fields: [tagId], references: [id], onDelete: Restrict)
+  createdBy User?     @relation("EventCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  reviews Review[]
+  tickets Ticket[]
+
+  @@index([date])
+  @@index([category])
+  @@index([status])
+}
+
+// 6. Отзыв
+model Review {
+  id      Int      @id @default(autoincrement())
+  userId  Int
+  eventId Int
+  text    String   @db.Text
+  rating  Int
+  date    DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([eventId])
+}
+
+// 7. Подарок
+model Gift {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String     @db.Text
+  type        String
+  status      GiftStatus @default(AVAILABLE)
+
+  promocodes Promocode[]
+}
+
+// 8. Промокод
+model Promocode {
+  id       Int             @id @default(autoincrement())
+  giftId   Int
+  code     String          @unique
+  status   PromocodeStatus @default(ACTIVE)
+  discount Int             @default(0)
+
+  gift    Gift     @relation(fields: [giftId], references: [id], onDelete: Cascade)
+  tickets Ticket[]
+}
+
+// 9. Билет
+model Ticket {
+  id         Int          @id @default(autoincrement())
+  userId     Int
+  eventId    Int
+  promoId    Int?
+  seatNumber Int
+  price      Int          @default(0)
+  status     TicketStatus @default(ACTIVE)
+  qrCode     String       @unique
+  createdAt  DateTime     @default(now())
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  promo Promocode? @relation(fields: [promoId], references: [id], onDelete: SetNull)
+
+  @@unique([eventId, seatNumber])
+  @@index([userId])
+}
