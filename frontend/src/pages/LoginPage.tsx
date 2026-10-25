@@ -7,6 +7,14 @@ import { getErrorMessage } from '../api/client';
 import { AuthShell } from '../components/AuthShell';
 import { useAuthStore } from '../stores/authStore';
 
+const DEMO_ACCOUNTS = [
+  { role: 'admin', label: 'Администратор', email: 'admin@vibecity.by', password: 'admin' },
+  { role: 'organizer', label: 'Организатор', email: 'user@vibecity.by', password: 'user123' },
+  { role: 'user', label: 'Пользователь', email: 'mikhail@vibecity.by', password: 'user123' },
+] as const;
+
+type DemoAccount = (typeof DEMO_ACCOUNTS)[number];
+
 export const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,9 +49,9 @@ export const LoginPage = () => {
     mutation.mutate({ email: email.trim(), password });
   };
 
-  const fillDemo = (role: 'admin' | 'user') => {
-    setEmail(role === 'admin' ? 'admin@vibecity.by' : 'user@vibecity.by');
-    setPassword(role === 'admin' ? 'admin' : 'user123');
+  const fillDemo = (account: DemoAccount) => {
+    setEmail(account.email);
+    setPassword(account.password);
     setError('');
   };
 
@@ -127,23 +135,21 @@ export const LoginPage = () => {
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/35">
           Тестовые аккаунты
         </p>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          <button
-            type="button"
-            onClick={() => fillDemo('admin')}
-            className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-left transition hover:border-vibe-400/40 hover:bg-vibe-500/10"
-          >
-            <span className="block text-xs font-semibold text-white">Администратор</span>
-            <span className="mt-0.5 block text-[11px] text-white/40">admin@vibecity.by / admin</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => fillDemo('user')}
-            className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-left transition hover:border-vibe-400/40 hover:bg-vibe-500/10"
-          >
-            <span className="block text-xs font-semibold text-white">Пользователь</span>
-            <span className="mt-0.5 block text-[11px] text-white/40">user@vibecity.by / user123</span>
-          </button>
+        <div className="mt-3 grid gap-2">
+          {DEMO_ACCOUNTS.map((account) => (
+            <button
+              key={account.role}
+              type="button"
+              onClick={() => fillDemo(account)}
+              title={`${account.email} / ${account.password}`}
+              className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-left transition hover:border-vibe-400/40 hover:bg-vibe-500/10"
+            >
+              <span className="text-xs font-semibold text-white">{account.label}</span>
+              <span className="shrink-0 text-right text-[10px] leading-relaxed text-white/40">
+                {account.email} / {account.password}
+              </span>
+            </button>
+          ))}
         </div>
         <p className="mt-2.5 text-[11px] text-white/25">Нажмите, чтобы подставить данные в форму.</p>
       </div>
