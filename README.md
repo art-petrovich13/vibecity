@@ -91,6 +91,15 @@ docker compose down                # остановить (данные сохр
 docker compose down -v             # остановить и удалить базу данных
 ```
 
+После изменения кода образы нужно пересобрать — `docker compose up -d` сам этого не делает:
+
+```bash
+docker compose build --no-cache backend frontend
+docker compose up -d --force-recreate backend frontend
+```
+
+Затем обновите страницу с очисткой кэша (`Cmd+Shift+R` / `Ctrl+Shift+R`).
+
 > При первом запуске backend ждёт готовности MySQL, применяет схему Prisma и загружает
 > демо-данные. При повторном запуске сидинг пропускается, данные сохраняются в volume
 > `vibecity_mysql_data`. Пароли MySQL и `JWT_SECRET` можно переопределить через переменные
@@ -349,6 +358,8 @@ vibecity/
 | API отвечает `502` | backend не прошёл healthcheck: `docker compose logs backend` |
 | Нужно сбросить демо-данные | `docker compose down -v` (удалит volume `vibecity_mysql_data`) или `cd backend && npm run seed -- --force` |
 | Не загружаются картинки | события используют внешние изображения Unsplash; без интернета показывается заглушка |
+| В Docker открывается старая версия | образы не пересобраны: `docker compose build --no-cache backend frontend && docker compose up -d --force-recreate backend frontend`; затем жёсткое обновление страницы |
+| Порт 3000 занят старым контейнером v1 | `docker rm -f vibecity` и повторите `docker compose up -d --force-recreate` |
 | Белый экран после сборки | проверьте `docker compose logs frontend`; nginx должен раздавать `index.html` и проксировать `/api` на `backend:3000` |
 
 ---
