@@ -32,7 +32,7 @@ const usersSeed = [
     phone: '+375 29 222-22-22',
     email: 'user@vibecity.by',
     password: 'user123',
-    role: 'USER' as const,
+    role: 'ORGANIZER' as const,
   },
   {
     key: 'mikhail',
@@ -531,7 +531,7 @@ const main = async () => {
       `${promocodesSeed.length} промокодов, ${reviewsSeed.length} отзывов, ${ticketsSeed.length} билетов.`,
   );
   // eslint-disable-next-line no-console
-  console.log('[seed] Админ: admin@vibecity.by / admin · Пользователь: user@vibecity.by / user123');
+  console.log('[seed] Админ: admin@vibecity.by / admin · Организатор: user@vibecity.by / user123 · Пользователь: mikhail@vibecity.by / user123');
 };
 
 main()

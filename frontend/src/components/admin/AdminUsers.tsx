@@ -14,6 +14,12 @@ import { cn } from '../../lib/cn';
 
 const PAGE_SIZE = 12;
 
+const ROLE_LABELS: Record<Role, string> = {
+  USER: 'Пользователь',
+  ORGANIZER: 'Организатор',
+  ADMIN: 'Администратор',
+};
+
 export const AdminUsers = () => {
   const { user: currentUser } = useAuthStore();
   const queryClient = useQueryClient();
@@ -42,6 +48,28 @@ export const AdminUsers = () => {
       }),
   });
 
+  const roleMutation = useMutation({
+    mutationFn: ({ id, role }: { id: number; role: Role }) => adminApi.updateUserRole(id, role),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      setError('');
+    },
+    onError: (mutationError) => setError(getErrorMessage(mutationError)),
+  });
+
+  const handleRoleChange = (user: User, nextRole: Role) => {
+    if (nextRole === user.role) return;
+    if (
+      !window.confirm(
+        `Изменить роль пользователя ${fullName(user)} на «${ROLE_LABELS[nextRole]}»?`,
+      )
+    ) {
+      return;
+    }
+    roleMutation.mutate({ id: user.id, role: nextRole });
+  };
+
   const banMutation = useMutation({
     mutationFn: ({ id, isBanned }: { id: number; isBanned: boolean }) =>
       adminApi.banUser(id, isBanned),
@@ -68,6 +96,7 @@ export const AdminUsers = () => {
           <p className="eyebrow">Пользователи</p>
           <h2 className="mt-1 font-display text-xl font-bold">Управление доступами</h2>
           <p className="mt-1 text-xs text-white/35">
+            Роль можно изменить прямо в таблице; после смены пользователю нужно войти заново.
             Блокировка запрещает вход и покупку билетов, но не удаляет историю.
           </p>
         </div>
@@ -95,6 +124,7 @@ export const AdminUsers = () => {
           >
             <option value="">Все роли</option>
             <option value="USER">Пользователи</option>
+            <option value="ORGANIZER">Организаторы</option>
             <option value="ADMIN">Администраторы</option>
           </select>
         </div>
@@ -171,7 +201,21 @@ export const AdminUsers = () => {
                             <span className="block text-white/30">{user.phone}</span>
                           </td>
                           <td className="px-4 py-3.5">
-                            <StatusBadge status={user.role} />
+                            {isSelf ? (
+                              <StatusBadge status={user.role} />
+                            ) : (
+                              <select
+                                className="field h-8 cursor-pointer py-0 text-[11px]"
+                                value={user.role}
+                                onChange={(event) => handleRoleChange(user, event.target.value as Role)}
+                                disabled={roleMutation.isPending}
+                                aria-label={`Роль пользователя ${fullName(user)}`}
+                              >
+                                <option value="USER">Пользователь</option>
+                                <option value="ORGANIZER">Организатор</option>
+                                <option value="ADMIN">Администратор</option>
+                              </select>
+                            )}
                           </td>
                           <td className="px-4 py-3.5">
                             <span

@@ -24,6 +24,7 @@ import { Modal } from '../components/Modal';
 import { Pagination } from '../components/Pagination';
 import { formatDate, formatPrice, pluralize } from '../lib/format';
 import { cn } from '../lib/cn';
+import { useAuthStore } from '../stores/authStore';
 
 const PAGE_SIZE = 9;
 
@@ -35,6 +36,8 @@ const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
 ];
 
 export const HomePage = () => {
+  const { user } = useAuthStore();
+  const isOrganizer = user?.role === 'ORGANIZER' || user?.role === 'ADMIN';
   const [filters, setFilters] = useState<FilterValues>(DEFAULT_FILTERS);
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
@@ -393,16 +396,24 @@ export const HomePage = () => {
             <div className="max-w-xl">
               <p className="eyebrow">Организаторам</p>
               <h2 className="mt-2 font-display text-2xl font-bold sm:text-3xl">
-                Проводите события? Расскажите о них городу
+                {isOrganizer
+                  ? 'Проводите события? Расскажите о них городу'
+                  : 'Хотите проводить события?'}
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-white/50">
-                Разместите мероприятие в афише, управляйте продажами и следите за статистикой —
-                всё в одном кабинете.
+                {isOrganizer
+                  ? 'Разместите мероприятие в афише, управляйте продажами и следите за статистикой — всё в одном кабинете.'
+                  : user
+                    ? 'Роль организатора назначает администратор. Попросите назначить её в разделе «Пользователи» — после этого откроется кабинет организатора.'
+                    : 'Зарегистрируйтесь, а администратор назначит роль организатора. После этого вы сможете публиковать мероприятия, следить за продажами и сканировать билеты.'}
               </p>
             </div>
-            <Link to="/organizer" className="btn btn-primary btn-lg shrink-0">
-              <Ticket size={18} />
-              Разместить событие
+            <Link
+              to={isOrganizer ? '/organizer' : user ? '/profile' : '/register'}
+              className="btn btn-primary btn-lg shrink-0"
+            >
+              {isOrganizer ? <Ticket size={18} /> : <ArrowRight size={18} />}
+              {isOrganizer ? 'Разместить событие' : user ? 'Мой профиль' : 'Зарегистрироваться'}
             </Link>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { EventDetailPage } from './pages/EventDetailPage';
+import { ForbiddenPage } from './pages/ForbiddenPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -53,10 +54,11 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="forbidden" element={<ForbiddenPage />} />
         <Route
           path="scanner"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute roles={['ORGANIZER', 'ADMIN']}>
               <ScannerPage />
             </ProtectedRoute>
           }
@@ -64,7 +66,7 @@ export default function App() {
         <Route
           path="organizer"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute roles={['ORGANIZER', 'ADMIN']}>
               <OrganizerDashboard />
             </ProtectedRoute>
           }

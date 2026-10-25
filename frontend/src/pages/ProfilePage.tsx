@@ -304,7 +304,7 @@ export const ProfilePage = () => {
             <ShieldCheck size={16} /> Перейти в админ-панель
             <ArrowRight size={15} />
           </Link>
-        ) : (
+        ) : user.role === 'ORGANIZER' ? (
           <Link
             to="/organizer"
             className="relative mt-5 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/[0.06] hover:text-white"
@@ -312,6 +312,12 @@ export const ProfilePage = () => {
             <Sparkles size={16} className="text-vibe-300" /> Кабинет организатора
             <ArrowRight size={15} />
           </Link>
+        ) : (
+          <div className="relative mt-5 inline-flex max-w-2xl items-start gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs leading-relaxed text-white/40">
+            <Sparkles size={16} className="mt-0.5 shrink-0 text-vibe-300" />
+            Роль организатора назначает администратор. Обратитесь к администратору, чтобы
+            получить доступ к созданию мероприятий.
+          </div>
         )}
       </div>
 

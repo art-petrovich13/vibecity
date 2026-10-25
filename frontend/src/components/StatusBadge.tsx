@@ -12,6 +12,7 @@ const STATUS_MAP: Record<string, { label: string; className: string }> = {
   RESERVED: { label: 'Зарезервирован', className: 'border-sky-400/25 bg-sky-400/10 text-sky-300' },
   GIVEN: { label: 'Выдан', className: 'border-white/15 bg-white/5 text-white/50' },
   USER: { label: 'Пользователь', className: 'border-white/15 bg-white/5 text-white/60' },
+  ORGANIZER: { label: 'Организатор', className: 'border-pulse-400/30 bg-pulse-400/10 text-pulse-300' },
   ADMIN: { label: 'Администратор', className: 'border-vibe-400/30 bg-vibe-400/10 text-vibe-300' },
 };
 

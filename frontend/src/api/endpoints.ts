@@ -178,6 +178,9 @@ export const adminApi = {
   banUser: (id: number, isBanned: boolean) =>
     api.patch<{ user: User }>(`/admin/users/${id}/ban`, { isBanned }).then((response) => response.data.user),
 
+  updateUserRole: (id: number, role: Role) =>
+    api.patch<{ user: User }>(`/admin/users/${id}/role`, { role }).then((response) => response.data.user),
+
   events: (params: AdminEventsFilters = {}) =>
     api.get<Paginated<Event>>('/admin/events', { params }).then((response) => response.data),
 

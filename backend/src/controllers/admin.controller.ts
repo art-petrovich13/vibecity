@@ -78,6 +78,28 @@ export const listUsers = async (req: Request, res: Response) => {
   });
 };
 
+export const updateUserRole = async (req: Request, res: Response) => {
+  const id = parseId(req.params.id);
+  const { role } = req.body;
+
+  if (id === req.user!.id) {
+    throw new HttpError(400, 'Нельзя изменить роль собственного аккаунта');
+  }
+
+  const account = await prisma.user.findUnique({ where: { id }, select: { id: true } });
+  if (!account) {
+    throw new HttpError(404, 'Пользователь не найден');
+  }
+
+  const user = await prisma.user.update({
+    where: { id },
+    data: { role },
+    select: publicUserSelect,
+  });
+
+  res.json({ user });
+};
+
 export const banUser = async (req: Request, res: Response) => {
   const id = parseId(req.params.id);
   const { isBanned } = req.body;

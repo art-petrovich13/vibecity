@@ -76,3 +76,19 @@ export const adminMiddleware = (req: Request, _res: Response, next: NextFunction
 
   next();
 };
+
+/**
+ * Доступ для организаторов и администраторов.
+ * Организатор — пользователь с ролью ORGANIZER, который создаёт мероприятия.
+ */
+export const organizerMiddleware = (req: Request, _res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return next(new HttpError(401, 'Требуется авторизация'));
+  }
+
+  if (req.user.role !== 'ORGANIZER' && req.user.role !== 'ADMIN') {
+    return next(new HttpError(403, 'Недостаточно прав: нужна роль организатора'));
+  }
+
+  next();
+};

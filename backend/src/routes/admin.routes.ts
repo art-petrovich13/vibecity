@@ -18,6 +18,7 @@ import {
   promocodeUpdateSchema,
   tagCreateSchema,
   tagUpdateSchema,
+  userRoleSchema,
 } from '../validators/schemas';
 
 const router = Router();
@@ -29,6 +30,7 @@ router.get('/stats', asyncHandler(adminController.getStats));
 // Пользователи
 router.get('/users', asyncHandler(adminController.listUsers));
 router.patch('/users/:id/ban', validateBody(banUserSchema), asyncHandler(adminController.banUser));
+router.patch('/users/:id/role', validateBody(userRoleSchema), asyncHandler(adminController.updateUserRole));
 
 // Мероприятия и модерация
 router.get('/events', asyncHandler(adminController.listEvents));

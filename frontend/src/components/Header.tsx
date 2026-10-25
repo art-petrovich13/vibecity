@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, Menu, Moon, ShieldCheck, Sun, Ticket, UserRound, X } from 'lucide-react';
+import { LogOut, Menu, Moon, ShieldCheck, Sparkles, Sun, Ticket, UserRound, X } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '../api/endpoints';
 import { useAuthStore } from '../stores/authStore';
@@ -33,6 +33,7 @@ export const Header = () => {
 
   const initials = user ? `${user.firstName[0] ?? ''}${user.lastName[0] ?? ''}`.toUpperCase() : '';
   const isAdmin = user?.role === 'ADMIN';
+  const isOrganizer = user?.role === 'ORGANIZER' || isAdmin;
   const pendingQuery = useQuery({
     queryKey: ['admin-stats'],
     queryFn: adminApi.stats,
@@ -55,10 +56,12 @@ export const Header = () => {
                 Мои билеты
               </NavLink>
             ) : null}
-            <NavLink to="/organizer" className={navLinkClass}>
-              Организаторам
-            </NavLink>
-            {user ? (
+            {isOrganizer ? (
+              <NavLink to="/organizer" className={navLinkClass}>
+                Организаторам
+              </NavLink>
+            ) : null}
+            {isOrganizer ? (
               <NavLink to="/scanner" className={navLinkClass}>
                 Сканер
               </NavLink>
@@ -100,7 +103,11 @@ export const Header = () => {
                 <span className="max-w-[120px] truncate text-sm font-medium text-white/80">
                   {user.firstName}
                 </span>
-                {isAdmin ? <ShieldCheck size={14} className="text-acid" /> : null}
+                {isAdmin ? (
+                  <ShieldCheck size={14} className="text-acid" />
+                ) : user?.role === 'ORGANIZER' ? (
+                  <Sparkles size={14} className="text-pulse-300" />
+                ) : null}
               </Link>
               <button
                 type="button"
@@ -151,10 +158,12 @@ export const Header = () => {
             <NavLink to="/" end className={navLinkClass}>
               Афиша
             </NavLink>
-            <NavLink to="/organizer" className={navLinkClass}>
-              Организаторам
-            </NavLink>
-            {user ? (
+            {isOrganizer ? (
+              <NavLink to="/organizer" className={navLinkClass}>
+                Организаторам
+              </NavLink>
+            ) : null}
+            {isOrganizer ? (
               <NavLink to="/scanner" className={navLinkClass}>
                 Сканер билетов
               </NavLink>

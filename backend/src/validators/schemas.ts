@@ -209,7 +209,7 @@ export const promocodeUpdateSchema = z.object({
 
 export const adminUsersQuerySchema = z.object({
   search: optionalText(200),
-  role: z.enum(['USER', 'ADMIN']).optional(),
+  role: z.enum(['USER', 'ORGANIZER', 'ADMIN']).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
@@ -218,4 +218,8 @@ export type AdminUsersQuery = z.infer<typeof adminUsersQuerySchema>;
 
 export const banUserSchema = z.object({
   isBanned: z.boolean(),
+});
+
+export const userRoleSchema = z.object({
+  role: z.enum(['USER', 'ORGANIZER', 'ADMIN']),
 });

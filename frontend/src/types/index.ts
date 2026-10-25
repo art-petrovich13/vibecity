@@ -1,4 +1,4 @@
-export type Role = 'USER' | 'ADMIN';
+export type Role = 'USER' | 'ORGANIZER' | 'ADMIN';
 export type EventStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export type TicketStatus = 'ACTIVE' | 'USED' | 'CANCELLED';
 export type PromocodeStatus = 'ACTIVE' | 'USED' | 'EXPIRED';
