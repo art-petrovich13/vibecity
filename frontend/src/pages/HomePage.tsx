@@ -210,7 +210,7 @@ export const HomePage = () => {
           </div>
 
           {/* Poster stack */}
-          <div className="relative hidden h-[430px] lg:block" aria-hidden="true">
+          <div className="on-media relative hidden h-[430px] lg:block" aria-hidden="true">
             <div className="absolute right-6 top-2 h-[340px] w-[250px] rotate-[7deg] overflow-hidden rounded-[28px] border border-white/10 bg-ink-800 shadow-card">
               {featured[1]?.imageUrl ? (
                 <img
@@ -387,7 +387,7 @@ export const HomePage = () => {
 
       {/* CTA */}
       <section className="page-container pb-4">
-        <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-vibe-600/25 via-ink-900 to-pulse-500/15 px-6 py-10 sm:px-10 sm:py-12">
+        <div className="on-media relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-vibe-600/25 via-ink-900 to-pulse-500/15 px-6 py-10 sm:px-10 sm:py-12">
           <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-pulse-500/20 blur-[90px]" />
           <div className="relative flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
             <div className="max-w-xl">

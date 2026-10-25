@@ -14,6 +14,7 @@ import {
   Mail,
   MapPin,
   Phone,
+  Printer,
   QrCode,
   Settings,
   ShieldCheck,
@@ -44,7 +45,7 @@ const TicketCard = ({ ticket, onShowQr }: { ticket: Ticket; onShowQr: (ticket: T
   return (
     <article className="panel overflow-hidden">
       <div className="flex flex-col gap-4 p-4 sm:flex-row sm:p-5">
-        <div className="relative h-28 w-full shrink-0 overflow-hidden rounded-2xl bg-ink-800 sm:w-36">
+        <div className="on-media relative h-28 w-full shrink-0 overflow-hidden rounded-2xl bg-ink-800 sm:w-36">
           {ticket.event.imageUrl && !imageFailed ? (
             <img
               src={ticket.event.imageUrl}
@@ -104,14 +105,22 @@ const TicketCard = ({ ticket, onShowQr }: { ticket: Ticket; onShowQr: (ticket: T
             <p className="font-display text-lg font-bold">№ {ticket.seatNumber}</p>
             <p className="mt-0.5 text-xs text-white/40">{formatPrice(ticket.price)}</p>
           </div>
-          <button
-            type="button"
-            onClick={() => onShowQr(ticket)}
-            disabled={ticket.status !== 'ACTIVE'}
-            className="btn btn-secondary btn-sm w-fit"
-          >
-            <QrCode size={14} /> QR-код
-          </button>
+          <div className="flex flex-wrap gap-2 sm:flex-col sm:items-end">
+            <button
+              type="button"
+              onClick={() => onShowQr(ticket)}
+              disabled={ticket.status !== 'ACTIVE'}
+              className="btn btn-secondary btn-sm w-fit"
+            >
+              <QrCode size={14} /> QR-код
+            </button>
+            <Link
+              to={`/tickets/${ticket.id}/print`}
+              className="btn btn-secondary btn-sm w-fit"
+            >
+              <Printer size={14} /> PDF
+            </Link>
+          </div>
         </div>
       </div>
     </article>
@@ -594,6 +603,14 @@ export const ProfilePage = () => {
               Покажите QR-код на входе. Скриншот также подойдёт. Билет действует на одно лицо и
               указанное место.
             </p>
+
+            <Link
+              to={`/tickets/${qrTicket.id}/print`}
+              onClick={() => setQrTicket(null)}
+              className="btn btn-primary btn-md mt-4 w-full"
+            >
+              <Printer size={16} /> Печать / сохранить PDF
+            </Link>
           </div>
         ) : null}
       </Modal>

@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, Menu, ShieldCheck, Ticket, UserRound, X } from 'lucide-react';
+import { LogOut, Menu, Moon, ShieldCheck, Sun, Ticket, UserRound, X } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { adminApi } from '../api/endpoints';
 import { useAuthStore } from '../stores/authStore';
+import { useThemeStore } from '../stores/themeStore';
 import { cn } from '../lib/cn';
 import { Logo } from './Logo';
 
@@ -13,6 +16,7 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
 
 export const Header = () => {
   const { user, logout } = useAuthStore();
+  const { theme, toggleTheme } = useThemeStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -29,6 +33,13 @@ export const Header = () => {
 
   const initials = user ? `${user.firstName[0] ?? ''}${user.lastName[0] ?? ''}`.toUpperCase() : '';
   const isAdmin = user?.role === 'ADMIN';
+  const pendingQuery = useQuery({
+    queryKey: ['admin-stats'],
+    queryFn: adminApi.stats,
+    enabled: isAdmin,
+    staleTime: 60_000,
+  });
+  const pendingEvents = pendingQuery.data?.pendingEvents ?? 0;
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-ink-950/80 backdrop-blur-xl">
@@ -47,15 +58,36 @@ export const Header = () => {
             <NavLink to="/organizer" className={navLinkClass}>
               Организаторам
             </NavLink>
+            {user ? (
+              <NavLink to="/scanner" className={navLinkClass}>
+                Сканер
+              </NavLink>
+            ) : null}
             {isAdmin ? (
               <NavLink to="/admin" className={navLinkClass}>
-                Админка
+                <span className="inline-flex items-center gap-1.5">
+                  Админка
+                  {pendingEvents > 0 ? (
+                    <span className="grid h-4 min-w-4 place-items-center rounded-full bg-amber-400 px-1 text-[9px] font-bold text-ink-950">
+                      {pendingEvents}
+                    </span>
+                  ) : null}
+                </span>
               </NavLink>
             ) : null}
           </nav>
         </div>
 
         <div className="hidden items-center gap-2 md:flex">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="btn btn-ghost h-10 w-10"
+            title={theme === 'light' ? 'Включить тёмную тему' : 'Включить светлую тему'}
+            aria-label={theme === 'light' ? 'Включить тёмную тему' : 'Включить светлую тему'}
+          >
+            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          </button>
           {user ? (
             <>
               <Link
@@ -92,15 +124,25 @@ export const Header = () => {
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => setMobileOpen((value) => !value)}
-          className="btn btn-secondary h-10 w-10 md:hidden"
-          aria-label={mobileOpen ? 'Закрыть меню' : 'Открыть меню'}
-          aria-expanded={mobileOpen}
-        >
-          {mobileOpen ? <X size={18} /> : <Menu size={18} />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="btn btn-secondary h-10 w-10"
+            aria-label={theme === 'light' ? 'Включить тёмную тему' : 'Включить светлую тему'}
+          >
+            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileOpen((value) => !value)}
+            className="btn btn-secondary h-10 w-10"
+            aria-label={mobileOpen ? 'Закрыть меню' : 'Открыть меню'}
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
       </div>
 
       {mobileOpen ? (
@@ -113,13 +155,25 @@ export const Header = () => {
               Организаторам
             </NavLink>
             {user ? (
+              <NavLink to="/scanner" className={navLinkClass}>
+                Сканер билетов
+              </NavLink>
+            ) : null}
+            {user ? (
               <NavLink to="/profile" className={navLinkClass}>
                 Мои билеты
               </NavLink>
             ) : null}
             {isAdmin ? (
               <NavLink to="/admin" className={navLinkClass}>
-                Админка
+                <span className="inline-flex items-center gap-1.5">
+                  Админка
+                  {pendingEvents > 0 ? (
+                    <span className="grid h-4 min-w-4 place-items-center rounded-full bg-amber-400 px-1 text-[9px] font-bold text-ink-950">
+                      {pendingEvents}
+                    </span>
+                  ) : null}
+                </span>
               </NavLink>
             ) : null}
           </nav>

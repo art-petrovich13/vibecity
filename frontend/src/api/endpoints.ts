@@ -18,6 +18,7 @@ import type {
   Role,
   Tag,
   TagInput,
+  ScannerTicket,
   Ticket,
   TicketSeatsResponse,
   TicketStatus,
@@ -110,8 +111,22 @@ export const ticketsApi = {
   buy: (data: { eventId: number; seatNumber: number; promoCode?: string }) =>
     api.post<{ ticket: Ticket }>('/tickets/buy', data).then((response) => response.data.ticket),
 
+  get: (id: number) =>
+    api.get<{ ticket: ScannerTicket }>(`/tickets/${id}`).then((response) => response.data.ticket),
+
   my: (status?: TicketStatus) =>
     api.get<{ items: Ticket[] }>('/tickets/my', { params: { status } }).then((response) => response.data.items),
+
+  scanner: () =>
+    api.get<{ items: ScannerTicket[] }>('/tickets/scanner').then((response) => response.data.items),
+
+  scan: (code: string) =>
+    api
+      .get<{ ticket: ScannerTicket }>(`/tickets/scan/${encodeURIComponent(code)}`)
+      .then((response) => response.data.ticket),
+
+  checkIn: (id: number) =>
+    api.post<{ ticket: ScannerTicket }>(`/tickets/${id}/check-in`).then((response) => response.data.ticket),
 };
 
 export const reviewsApi = {

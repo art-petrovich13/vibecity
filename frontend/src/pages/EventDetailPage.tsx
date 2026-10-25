@@ -109,7 +109,7 @@ export const EventDetailPage = () => {
               alt=""
               className="h-full w-full scale-110 object-cover opacity-[0.18] blur-2xl"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-ink-950/50 via-ink-950/80 to-ink-950" />
+            <div className="event-hero-overlay absolute inset-0 bg-gradient-to-b from-ink-950/50 via-ink-950/80 to-ink-950" />
           </div>
         ) : (
           <div className="pointer-events-none absolute inset-0 bg-vibe-glow" />

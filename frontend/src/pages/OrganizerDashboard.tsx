@@ -12,6 +12,7 @@ import {
   MapPin,
   Pencil,
   Plus,
+  ScanLine,
   Sparkles,
   Ticket,
   Trash2,
@@ -137,6 +138,9 @@ export const OrganizerDashboard = () => {
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
             <Link to="/profile" className="btn btn-secondary btn-md">
               Мои билеты
+            </Link>
+            <Link to="/scanner" className="btn btn-secondary btn-md">
+              <ScanLine size={16} /> Сканер билетов
             </Link>
             <button type="button" onClick={openCreate} className="btn btn-primary btn-md">
               <Plus size={17} /> Новое мероприятие

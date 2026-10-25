@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { QRCodeSVG } from 'qrcode.react';
-import { CheckCircle2, CreditCard, Loader2, QrCode, Ticket as TicketIcon } from 'lucide-react';
+import { CheckCircle2, CreditCard, Loader2, Printer, QrCode, Ticket as TicketIcon } from 'lucide-react';
 import { eventsApi, promocodesApi, ticketsApi } from '../api/endpoints';
 import { getErrorMessage } from '../api/client';
 import { Modal } from './Modal';
@@ -185,6 +185,13 @@ export const BuyTicketModal = ({ event, open, onClose }: BuyTicketModalProps) =>
           <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
             <Link to="/profile" onClick={onClose} className="btn btn-primary btn-md">
               <QrCode size={16} /> Мои билеты
+            </Link>
+            <Link
+              to={`/tickets/${ticket.id}/print`}
+              onClick={onClose}
+              className="btn btn-secondary btn-md"
+            >
+              <Printer size={16} /> PDF
             </Link>
             <button type="button" onClick={onClose} className="btn btn-secondary btn-md">
               Закрыть

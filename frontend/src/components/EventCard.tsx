@@ -18,7 +18,7 @@ export const EventCard = ({ event }: EventCardProps) => {
       to={`/events/${event.id}`}
       className="group flex flex-col overflow-hidden rounded-3xl border border-white/[0.07] bg-ink-900/90 transition-all duration-300 hover:-translate-y-1 hover:border-white/15 hover:shadow-card"
     >
-      <div className="relative aspect-[16/10] overflow-hidden bg-ink-800">
+      <div className="on-media relative aspect-[16/10] overflow-hidden bg-ink-800">
         {event.imageUrl && !imageFailed ? (
           <img
             src={event.imageUrl}

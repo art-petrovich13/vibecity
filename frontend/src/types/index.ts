@@ -108,6 +108,15 @@ export interface Event {
   seats?: Seats;
 }
 
+export interface TicketBuyer {
+  id: number;
+  firstName: string;
+  lastName: string;
+  patronymic: string | null;
+  email: string;
+  phone: string;
+}
+
 export interface Ticket {
   id: number;
   userId: number;
@@ -120,6 +129,10 @@ export interface Ticket {
   createdAt: string;
   event: Event;
   promo: Promocode | null;
+}
+
+export interface ScannerTicket extends Ticket {
+  user: TicketBuyer;
 }
 
 export interface Catalog {

@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   LibraryBig,
   MessageSquare,
+  ScanLine,
   ShieldCheck,
   Users,
 } from 'lucide-react';
@@ -61,9 +62,14 @@ export const AdminDashboard = () => {
             </div>
           </div>
 
-          <Link to="/" className="btn btn-secondary btn-md shrink-0">
-            Открыть афишу
-          </Link>
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+            <Link to="/scanner" className="btn btn-secondary btn-md">
+              <ScanLine size={16} /> Сканер билетов
+            </Link>
+            <Link to="/" className="btn btn-secondary btn-md">
+              Открыть афишу
+            </Link>
+          </div>
         </div>
       </div>
 

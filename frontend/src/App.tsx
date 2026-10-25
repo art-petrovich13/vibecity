@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -7,8 +8,11 @@ import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { OrganizerDashboard } from './pages/OrganizerDashboard';
+import { PrintTicketPage } from './pages/PrintTicketPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { ScannerPage } from './pages/ScannerPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { useThemeStore } from './stores/themeStore';
 
 const RedirectToHome = () => {
   const location = useLocation();
@@ -16,8 +20,25 @@ const RedirectToHome = () => {
 };
 
 export default function App() {
+  const theme = useThemeStore((state) => state.theme);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle('light', theme === 'light');
+    root.classList.toggle('dark', theme === 'dark');
+    root.style.colorScheme = theme;
+  }, [theme]);
+
   return (
     <Routes>
+      <Route
+        path="tickets/:id/print"
+        element={
+          <ProtectedRoute>
+            <PrintTicketPage />
+          </ProtectedRoute>
+        }
+      />
       <Route element={<Layout />}>
         <Route index element={<HomePage />} />
         <Route path="events" element={<RedirectToHome />} />
@@ -29,6 +50,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="scanner"
+          element={
+            <ProtectedRoute>
+              <ScannerPage />
             </ProtectedRoute>
           }
         />

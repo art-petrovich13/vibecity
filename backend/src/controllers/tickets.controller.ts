@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import type { Request, Response } from 'express';
-import type { Promocode } from '@prisma/client';
+import type { Prisma, Promocode } from '@prisma/client';
 import { prisma } from '../prisma';
 import { HttpError } from '../utils/httpError';
 import { startOfTodayUtc } from '../utils/date';
@@ -19,6 +19,37 @@ const ticketInclude = {
     include: { gift: true },
   },
 } as const;
+
+const scannerInclude = {
+  event: {
+    include: {
+      place: true,
+      organizer: true,
+      tag: true,
+    },
+  },
+  user: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      patronymic: true,
+      email: true,
+      phone: true,
+    },
+  },
+  promo: {
+    include: { gift: true },
+  },
+} as const;
+
+type ScannerTicket = Prisma.TicketGetPayload<{ include: typeof scannerInclude }>;
+
+const ensureScannerAccess = (ticket: ScannerTicket, userId: number, role: string) => {
+  if (role !== 'ADMIN' && ticket.event.createdById !== userId) {
+    throw new HttpError(403, 'Нет доступа к билетам этого мероприятия');
+  }
+};
 
 const findPromocode = async (promoId?: number, promoCode?: string): Promise<Promocode | null> => {
   if (promoId) {
@@ -158,12 +189,89 @@ export const validatePromocode = async (req: Request, res: Response) => {
   });
 };
 
+/**
+ * Билеты для сканера организатора: только мероприятия, созданные текущим
+ * пользователем. Администратор видит билеты всех мероприятий.
+ */
+export const listScannerTickets = async (req: Request, res: Response) => {
+  const isAdmin = req.user!.role === 'ADMIN';
+
+  const tickets = await prisma.ticket.findMany({
+    where: isAdmin ? {} : { event: { createdById: req.user!.id } },
+    include: scannerInclude,
+    orderBy: { createdAt: 'desc' },
+    take: 300,
+  });
+
+  res.json({ items: tickets });
+};
+
+/**
+ * Поиск билета по QR-коду. Реальный сканер не используется: код можно
+ * вставить вручную или выбрать билет из списка.
+ */
+export const getScannerTicket = async (req: Request, res: Response) => {
+  const code = String(req.params.code ?? '').trim();
+
+  if (!code) {
+    throw new HttpError(400, 'Введите QR-код билета');
+  }
+
+  const ticket = await prisma.ticket.findUnique({
+    where: { qrCode: code },
+    include: scannerInclude,
+  });
+
+  if (!ticket) {
+    throw new HttpError(404, 'Билет с таким QR-кодом не найден');
+  }
+
+  ensureScannerAccess(ticket, req.user!.id, req.user!.role);
+
+  res.json({ ticket });
+};
+
+/**
+ * Отметка билета как использованного. Организатор может делать это только
+ * для билетов на свои мероприятия, администратор — для любых.
+ */
+export const checkInTicket = async (req: Request, res: Response) => {
+  const id = parseId(req.params.id);
+
+  const ticket = await prisma.ticket.findUnique({
+    where: { id },
+    include: scannerInclude,
+  });
+
+  if (!ticket) {
+    throw new HttpError(404, 'Билет не найден');
+  }
+
+  ensureScannerAccess(ticket, req.user!.id, req.user!.role);
+
+  if (ticket.status === 'USED') {
+    throw new HttpError(409, 'Билет уже был использован');
+  }
+
+  if (ticket.status === 'CANCELLED') {
+    throw new HttpError(400, 'Билет отменён и не может быть использован');
+  }
+
+  const updated = await prisma.ticket.update({
+    where: { id },
+    data: { status: 'USED' },
+    include: scannerInclude,
+  });
+
+  res.json({ ticket: updated });
+};
+
 export const getTicket = async (req: Request, res: Response) => {
   const id = parseId(req.params.id);
 
   const ticket = await prisma.ticket.findUnique({
     where: { id },
-    include: ticketInclude,
+    include: scannerInclude,
   });
 
   if (!ticket) {

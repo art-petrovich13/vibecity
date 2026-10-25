@@ -35,7 +35,7 @@ export const AuthShell = ({ title, subtitle, children, footer }: AuthShellProps)
         <div className="mt-6 text-sm text-white/40">{footer}</div>
       </div>
 
-      <div className="relative hidden h-[620px] lg:block" aria-hidden="true">
+      <div className="on-media relative hidden h-[620px] lg:block" aria-hidden="true">
         <div className="absolute inset-0 overflow-hidden rounded-[36px] border border-white/10 bg-gradient-to-br from-vibe-600/35 via-ink-900 to-pulse-500/25">
           <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-pulse-500/25 blur-[100px]" />
           <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-vibe-500/25 blur-[100px]" />

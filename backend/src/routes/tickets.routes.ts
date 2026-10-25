@@ -9,6 +9,9 @@ const router = Router();
 
 router.post('/buy', authMiddleware, validateBody(buyTicketSchema), asyncHandler(ticketsController.buyTicket));
 router.get('/my', authMiddleware, asyncHandler(ticketsController.myTickets));
+router.get('/scanner', authMiddleware, asyncHandler(ticketsController.listScannerTickets));
+router.get('/scan/:code', authMiddleware, asyncHandler(ticketsController.getScannerTicket));
+router.post('/:id/check-in', authMiddleware, asyncHandler(ticketsController.checkInTicket));
 router.get('/:id', authMiddleware, asyncHandler(ticketsController.getTicket));
 
 export default router;
